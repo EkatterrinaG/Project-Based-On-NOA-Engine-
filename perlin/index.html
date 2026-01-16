@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<!--
+	Copyright 2015 Mark McKay
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+		http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+-->
+
+    <head>
+        <title>Noise Maker</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" type="text/css" href="noiseMaker.css">
+        <script src="noiseMaker.js"></script>
+        <script>
+            function refreshImage()
+            {
+                var spec = {};
+
+                spec.randseed = document.getElementById("randseed").value;
+                spec.period = document.getElementById("period").value;
+                spec.levels = document.getElementById("numLevels").value;
+                spec.atten = document.getElementById("atten").value;
+                spec.absolute = document.getElementById("absolute").checked;
+                spec.color = document.getElementById("noiseColor").checked;
+                spec.alpha = document.getElementById("noiseAlpha").checked;
+
+                var imgWidth = parseInt(document.getElementById("imgWidth").value) || 32;
+                var imgHeight = parseInt(document.getElementById("imgHeight").value) || 32;
+                var pixelSize = parseInt(document.getElementById("pixelSize").value) || 1;
+                var borderWidth = parseInt(document.getElementById("borderWidth").value) || 0;
+
+                var c = document.createElement('canvas');
+                c.width = imgWidth;
+                c.height = imgHeight;
+
+                var ctx = c.getContext("2d");
+
+                var img = new Image(imgWidth, imgHeight);
+                //img.createChecker(period);
+//                img.createPerlinNoise(period, randseed);
+                img.createTurbulence(spec);
+                
+                // Применяем пикселизацию (квантование цветов для каменного вида)
+                img.pixelate(pixelSize);
+                
+                // Добавляем рамку
+                if (borderWidth > 0)
+                {
+                    img.addBorder(borderWidth);
+                }
+                
+                var imgData = img.toImageContext(ctx);
+                ctx.putImageData(imgData, 0, 0);
+
+                var dt = c.toDataURL('image/png');
+                
+                // Увеличиваем отображение для маленьких текстур (минимум 256px для видимости)
+                var minDisplaySize = 256;
+                var scale = Math.max(1, Math.ceil(minDisplaySize / Math.max(imgWidth, imgHeight)));
+                var displayWidth = imgWidth * scale;
+                var displayHeight = imgHeight * scale;
+                
+                displayImage.src = dt;
+                displayImage.style.width = displayWidth + 'px';
+                displayImage.style.height = displayHeight + 'px';
+
+            };
+
+            function dlCanvas()
+            {
+                var dt = displayImage.src;
+                this.href = dt;
+            };
+
+            function copyClipboardCanvas()
+            {
+                var dt = previewCanvas.toDataURL('image/png');
+
+                displayImage.src = dt;
+            };
+
+            window.onload = function()
+            {
+                dl.addEventListener('click', dlCanvas, false);
+
+                var form = document.getElementById("controlForm");
+                form.onsubmit = function() {return false};
+                form.onchange = refreshImage;
+
+                refreshImage();
+            };
+        </script>
+    </head>
+    <body>
+	    <div class="mainBody">
+			<h1>Perlin Noise Maker</h1>
+			<p>Create your own images of Perlin noise!  This app will generate tileable Perlin noise textures which is a useful raw material for may image processing applications.</p>
+
+			<p>Adjust the values below to change the proerties of the image.</p>
+			<p>To save the image, click on the <i>Download Image</i> link below.  Alternately, you can right click the image and use your web browser's menu to save it to disk.</p>
+
+			<img id="displayImage" style="border:1px solid #000000; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; width: auto; height: auto; max-width: 512px; max-height: 512px;"
+				 alt="noise.png"/>
+
+			<!--
+			<canvas id="previewCanvas" width="256" height="256" style="border:1px solid #000000;"></canvas>
+			-->
+
+			<script>
+			</script>
+
+			<form id="controlForm" action="">
+				<table border="0">
+				<tr><td>
+				Random Seed: <input id="randseed" type="number" value="1"/>
+				</td></tr>
+				<!--
+				Width: <select id="imgWidth">
+					<option>16</option>
+					<option>32</option>
+					<option>64</option>
+					<option>128</option>
+					<option>256</option>
+					<option>512</option>
+					<option>1024</option>
+				</select></br>
+				-->
+				<tr><td>
+				Width: <input id="imgWidth" type="number" value="32"/>
+				</td></tr>
+				<tr><td>
+				Height: <input id="imgHeight" type="number" value="32"/>
+				</td></tr>
+				<tr><td>
+				Cell Size: <input id="period" type="number" value="8"/>
+				</td></tr>
+				<tr><td>
+				Levels: <input id="numLevels" type="number" value="2" min="1" max="8"/>
+				</td></tr>
+				<tr><td>
+				Attenuation: <input id="atten" type="number" value="0" min="-1" max="2" step=".1"/>
+				</td></tr>
+				<tr><td>
+				Pixel Size: <input id="pixelSize" type="number" value="1" min="1" max="16"/>
+				</td></tr>
+				<tr><td>
+				Border Width: <input id="borderWidth" type="number" value="0" min="0" max="20"/>
+				</td></tr>
+				<tr><td>
+				Groovy: <input id="absolute" type="checkbox"/>
+				</td></tr>
+				<tr><td>
+				Color: <input id="noiseColor" type="checkbox"/>
+				</td></tr>
+				<tr><td>
+				Alpha: <input id="noiseAlpha" type="checkbox"/>
+				</td></tr>
+				</table>
+			</form>
+
+			<p><a id="dl" download="noiseTexture.png" class="button">Download Image</a></p>
+			<br/>
+			<!--
+			<a id="copyClipboard">Copy to clipboard</a><br/>
+			<br/>
+			<img class="aligncenter" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAM0AAADNCAMAAAAsYgRbAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABJQTFRF3NSmzMewPxIG//ncJEJsldTou1jHgAAAARBJREFUeNrs2EEKgCAQBVDLuv+V20dENbMY831wKz4Y/VHb/5RGQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0NDQ0PzMWtyaGhoaGhoaGhoaGhoaGhoxtb0QGhoaGhoaGhoaGhoaGhoaMbRLEvv50VTQ9OTQ5OpyZ01GpM2g0bfmDQaL7S+ofFC6xv3ZpxJiywakzbvd9r3RWPS9I2+MWk0+kbf0Hih9Y17U0nTHibrDDQ0NDQ0NDQ0NDQ0NDQ0NTXbRSL/AK72o6GhoaGhoRlL8951vwsNDQ0NDQ1NDc0WyHtDTEhDQ0NDQ0NTS5MdGhoaGhoaGhoaGhoaGhoaGhoaGhoaGposzSHAAErMwwQ2HwRQAAAAAElFTkSuQmCC" alt="beastie.png" />
+			<br/>
+			-->
+			<h2>How it works</h2>
+
+			<p><span class="keyword">Width</span> and <span class="keyword">Height</span> determine the width and height of the final image in pixels.</p>
+
+			<p><span class="keyword">Cell size</span> determines the coarseness of the image.  Perlin noise is made by blending together gradients that are evenly spaced apart in a grid.  By adjusting the spacing, you can change the coarseness of the generated texture.  The final image will tile seamlessly if the width and height of the image are whole multiples of the cell spacing.  For best results, use numbers that are powers of 2 for the image width, height and cell spacing.</p>
+
+			<p><span class="keyword">Levels</span> will blend extra levels of noise into your texture, with each additional level half the resolution of the previous one.  Blending several layers of noise can produce a cloudy effect.</p>
+
+			<p><span class="keyword">Attenuation</span> controls how multiple levels are mixed.  Less attenuation will make the coarser levels more prominent, giving you a rougher look.</p>
+
+			<p><span class="keyword">Color</span> and <span class="keyword">Alpha</span> determine which channels in the final image have unique noise generated.  By default a black and white texture will be generated (ie, the red, green and blue channels are all set to the same value and the alpha channel is solid white).  By checking 'color', you will write different noise textures into each of the red, green and blue channels.  By checking 'alpha' you will write noise into the alpha channel.</p>
+
+			<p><span class="keyword">Groovy</span> will rectify the noise.  That is, all values in the noise that are mid grey or darker will be inverted and then the entire texture is resampled to fill the full black-to-white range.  This creates a groove-like effect in the final texture which can be useful for some applications.</p>
+
+			<p><span class="keyword">Randseed</span> determines the starting state of the random number generator.  By changing it, you can create a different pattern of randomness in your image.</p>
+
+
+			<hr/>
+
+			<p>&copy; 2015 Mark McKay</p>
+			<p><a href="http://www.kitfox.com">My homepage on kitfox.com</a></p>
+			<p><a href="https://github.com/blackears/PerlinNoiseMaker">This project is now hosted on Github</a></p>
+		</div>
+    </body>
+</html>

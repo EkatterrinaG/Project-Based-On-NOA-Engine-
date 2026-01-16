@@ -1,0 +1,219 @@
+# Technical Notes
+
+This document describes the key algorithms and technical implementations used in this voxel-based 3D game.
+
+---
+
+## 1. Procedural World Generation
+
+### Simplex Noise Terrain Generation
+
+The terrain is generated using multi-layered Simplex noise ([noise.js](src/game/world/noise.js)):
+
+- **Continent Noise**: Low frequency (0.0005) for massive landmasses
+- **Terrain Noise**: Mid-frequency (0.004) with 4 octaves for base topography
+- **Detail Noise**: High frequency (0.05) for surface details
+- **Roughness Noise**: Per-biome variation (frequency x 3)
+- **Mountain Mask**: Threshold-based detection with smoothstep interpolation
+
+```javascript
+// Multi-octave noise combination
+getNoise2D(x, z) // Base 2D noise
+getNoise3D(x, y, z) // 3D noise for caves
+getOctaveNoise(x, z, octaves, persistence) // Layered noise
+```
+
+### Height Map Generation
+
+Height calculation in [heightmap.js](src/game/world/heightmap.js) combines multiple noise layers:
+
+```
+finalHeight = baseHeight + continent + mountainHeight + terrain + erosion + detail
+```
+
+Result: Continuous height values from -10 to 118 blocks, globally consistent across chunks.
+
+### Chunk Generation
+
+Chunks are 32x32x32 blocks ([chunk-generator.js](src/game/world/chunk-generator.js)):
+
+- Deterministic generation based on chunk coordinates (X, Y, Z)
+- Block selection based on height map and biome type
+- Block variants use hash-based deterministic selection:
+
+```javascript
+hash = (x * 73856093) ^ (y * 19349663) ^ (z * 83492791)
+```
+
+---
+
+## 2. Biome System
+
+Four biomes are defined in [biome-manager.js](src/game/world/biome-manager.js):
+
+| Biome  | Temperature | Terrain     | Surface    |
+|--------|-------------|-------------|------------|
+| FOREST | Cold        | Hilly       | Grass/Trees|
+| DESERT | Hot         | Flat        | Sand Dunes |
+| SNOW   | Very Cold   | Mountains   | Snow       |
+| FIELD  | Temperate   | Gentle Hills| Grass      |
+
+### Biome Distribution Algorithm
+
+- World divided into regions (512x512 blocks)
+- Meta-regions: 2x2 regions (1024x1024 blocks)
+- **Fisher-Yates shuffle** of biome IDs [0,1,2,3] per meta-region
+- Guarantees neighboring regions have different biomes
+- Sharp boundaries (no interpolation)
+
+### Per-Biome Parameters
+
+```javascript
+{
+  base: number,      // Base height offset
+  amplitude: number, // Height variation
+  frequency: number, // Noise scale
+  roughness: number, // Terrain roughness
+  octaves: number    // Noise layers
+}
+```
+
+---
+
+## 3. Cave Generation
+
+3D cave system using Perlin noise ([cave-generator.js](src/game/world/cave-generator.js)):
+
+- Multi-layer 3D Simplex noise via `caveNoise()`
+- **Threshold-based**: noise > 0.6 = cave air
+- Generates Y: 0-100 (preserves surface)
+- Creates interconnected tunnel networks
+
+```javascript
+caveNoise(x, y, z) > CAVE_THRESHOLD // true = air block
+```
+
+---
+
+## 4. Ore Generation
+
+Vein generation using **Random Walk** algorithm ([ore-generator.js](src/game/world/ore-generator.js)):
+
+- 6-directional random walk (X+/-, Y+/-, Z+/-)
+- Vein clustering for natural ore deposits
+
+| Ore     | Y Range | Vein Size | Spawn Chance |
+|---------|---------|-----------|--------------|
+| Coal    | 20-127  | 4-16      | 80%          |
+| Iron    | 0-64    | 5-8       | 70%          |
+| Gold    | 0-32    | 4-6       | 50%          |
+| Diamond | 1-16    | 4-6       | 90%          |
+
+---
+
+## 5. L-System Tree Generation
+
+Procedural trees using **Lindenmayer Systems** ([lsystem.js](src/game/world/lsystem.js), [tree-lsystem-generator.js](src/game/world/tree-lsystem-generator.js)):
+
+### Grammar Symbols
+
+| Symbol | Meaning                |
+|--------|------------------------|
+| F      | Forward (trunk/branch) |
+| X      | Growth tip (branching) |
+| [ ]    | Push/Pop state stack   |
+| + -    | Rotate branch          |
+| L      | Place leaves           |
+
+### Generation Process
+
+1. Initialize with axiom string
+2. Apply production rules recursively (2 iterations)
+3. Interpret string as 3D structure
+4. Dynamic angles: 25-32 degrees per branch
+
+### Biome-Specific Trees
+
+- **FOREST**: Oak trees (branchy, irregular)
+- **SNOW**: Pine trees (compact, conical, tall)
+- **DESERT/FIELD**: Random selection
+
+---
+
+## 6. Procedural Recipe Generation
+
+Dynamic crafting recipes ([recipe-generator.js](src/game/items/recipe-generator.js)):
+
+### Pattern Rotation Algorithm
+
+```javascript
+rotatePattern90(pattern) {
+  // 2D matrix 90 degree clockwise rotation
+  newGrid[row][col] = oldGrid[2-col][row]
+}
+```
+
+### Orientation System
+
+- UP: Default orientation
+- DOWN: 180 degree rotation
+- LEFT: 270 degree rotation
+- RIGHT: 90 degree rotation
+
+### Deterministic Selection
+
+```javascript
+hash = hashFunction(toolType + material + worldSeed)
+// Same seed always produces same recipes
+```
+
+---
+
+## 7. Plant Spawning
+
+L-System based plant generation ([Plants/](src/game/Plants/)):
+
+- **Flowers**: 3% density on grass blocks, 8 presets
+- **Cactus**: 1.5% density on sand blocks, 8 presets
+- Organic appearance via L-System grammar
+
+---
+
+## 8. Inventory & Crafting
+
+Stack-based inventory system ([inventory.js](src/game/items/inventory.js)):
+
+- 36 slots: 9 hotbar + 27 main storage
+- 3x3 crafting grid with shape-based recipe matching
+- Durability tracking for tools
+
+---
+
+## 9. Block Interaction
+
+Raycast-based targeting ([interaction.js](src/game/interaction.js)):
+
+- 10 block interaction distance
+- Mining speed varies by tool type and block hardness
+- Tool durability consumption per action
+
+---
+
+## 10. Lighting & Rendering
+
+Per-block ambient occlusion:
+
+```javascript
+aoMultipliers: [0.92, 0.8, 0.5]
+lightVector: [0.6, -1, -0.4] // Angled sun direction
+```
+
+---
+
+## 11. Data Persistence
+
+localStorage-based world storage:
+
+- World list stored as JSON in `mine_worlds`
+- Chunk data generated on-the-fly (deterministic)
+- Same seed = identical world (fully reproducible)

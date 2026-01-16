@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Exam Project</title>
+  <style>
+    /* === CSS ПЕРЕМЕННЫЕ ДЛЯ АДАПТИВНОСТИ === */
+    :root {
+      --slot-size: 50px;
+      --slot-icon-size: 32px;
+      --slot-gap: 4px;
+      --font-size-small: 10px;
+      --font-size-normal: 12px;
+      --font-size-large: 14px;
+      --font-size-title: 20px;
+      --padding-normal: 20px;
+      --padding-small: 10px;
+      --ui-scale: 1;
+    }
+
+    /* === БОЛЬШИЕ ЭКРАНЫ (увеличение) === */
+
+    /* Большие экраны (от 1200px высоты) */
+    @media screen and (min-height: 1200px) {
+      :root {
+        --slot-size: 60px;
+        --slot-icon-size: 40px;
+        --slot-gap: 5px;
+        --font-size-small: 12px;
+        --font-size-normal: 14px;
+        --font-size-large: 16px;
+        --font-size-title: 24px;
+        --padding-normal: 25px;
+        --padding-small: 12px;
+        --ui-scale: 1.2;
+      }
+    }
+
+    /* Очень большие экраны (от 1440px высоты) */
+    @media screen and (min-height: 1440px) {
+      :root {
+        --slot-size: 70px;
+        --slot-icon-size: 48px;
+        --slot-gap: 6px;
+        --font-size-small: 14px;
+        --font-size-normal: 16px;
+        --font-size-large: 18px;
+        --font-size-title: 28px;
+        --padding-normal: 30px;
+        --padding-small: 15px;
+        --ui-scale: 1.4;
+      }
+    }
+
+    /* 4K экраны (от 2000px высоты) */
+    @media screen and (min-height: 2000px) {
+      :root {
+        --slot-size: 90px;
+        --slot-icon-size: 60px;
+        --slot-gap: 8px;
+        --font-size-small: 18px;
+        --font-size-normal: 20px;
+        --font-size-large: 22px;
+        --font-size-title: 36px;
+        --padding-normal: 40px;
+        --padding-small: 20px;
+        --ui-scale: 1.8;
+      }
+    }
+
+    /* Большие экраны по ширине (от 1920px) */
+    @media screen and (min-width: 1920px) and (min-height: 1080px) {
+      :root {
+        --slot-size: 64px;
+        --slot-icon-size: 42px;
+        --slot-gap: 5px;
+        --font-size-small: 12px;
+        --font-size-normal: 14px;
+        --font-size-large: 16px;
+        --font-size-title: 24px;
+        --padding-normal: 25px;
+        --padding-small: 12px;
+        --ui-scale: 1.25;
+      }
+    }
+
+    /* === МАЛЕНЬКИЕ ЭКРАНЫ (уменьшение) === */
+
+    /* Средние экраны (до 900px высоты) */
+    @media screen and (max-height: 900px) {
+      :root {
+        --slot-size: 45px;
+        --slot-icon-size: 28px;
+        --font-size-title: 18px;
+        --padding-normal: 15px;
+        --ui-scale: 0.9;
+      }
+    }
+
+    /* Маленькие экраны (до 750px высоты) */
+    @media screen and (max-height: 750px) {
+      :root {
+        --slot-size: 40px;
+        --slot-icon-size: 24px;
+        --slot-gap: 3px;
+        --font-size-small: 9px;
+        --font-size-normal: 11px;
+        --font-size-large: 12px;
+        --font-size-title: 16px;
+        --padding-normal: 12px;
+        --padding-small: 8px;
+        --ui-scale: 0.8;
+      }
+    }
+
+    /* Очень маленькие экраны (до 650px высоты) */
+    @media screen and (max-height: 650px) {
+      :root {
+        --slot-size: 35px;
+        --slot-icon-size: 22px;
+        --slot-gap: 2px;
+        --font-size-small: 8px;
+        --font-size-normal: 10px;
+        --font-size-large: 11px;
+        --font-size-title: 14px;
+        --padding-normal: 10px;
+        --padding-small: 6px;
+        --ui-scale: 0.7;
+      }
+    }
+
+    /* Маленькая ширина экрана */
+    @media screen and (max-width: 900px) {
+      :root {
+        --slot-size: 40px;
+        --slot-icon-size: 24px;
+        --slot-gap: 3px;
+        --padding-normal: 12px;
+      }
+    }
+
+    @media screen and (max-width: 700px) {
+      :root {
+        --slot-size: 35px;
+        --slot-icon-size: 20px;
+        --slot-gap: 2px;
+        --padding-normal: 8px;
+      }
+    }
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+
+    /* Crosshair */
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 20px;
+      background-color: white;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    #crosshair::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 2px;
+      background-color: white;
+      transform: translate(-50%, -50%);
+    }
+
+    /* === MAIN MENU === */
+    #main-menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: none;
+      /* Hidden by default */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      overflow: hidden;
+    }
+
+    #main-menu.show {
+      display: flex;
+    }
+
+    #main-menu::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(100, 150, 200, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(150, 100, 200, 0.1) 0%, transparent 50%);
+      animation: backgroundShift 20s ease-in-out infinite;
+    }
+
+    @keyframes backgroundShift {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+    }
+
+    #main-menu.hidden {
+      display: none;
+    }
+
+    .menu-title {
+      font-size: 72px;
+      font-weight: bold;
+      color: #fff;
+      text-shadow:
+        4px 4px 0px #000,
+        6px 6px 0px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(255, 255, 255, 0.3);
+      margin-bottom: 60px;
+      letter-spacing: 4px;
+      animation: titleFloat 3s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    @keyframes titleFloat {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .menu-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .menu-button {
+      min-width: 280px;
+      padding: 16px 40px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(to bottom, #4a4a4a 0%, #2a2a2a 100%);
+      border: 3px solid #000;
+      border-radius: 0;
+      cursor: pointer;
+      text-shadow: 2px 2px 0px #000;
+      box-shadow:
+        0 4px 0 #000,
+        0 6px 0 rgba(0, 0, 0, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2);
+      transition: all 0.1s;
+      position: relative;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .menu-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .menu-button:hover {
+      background: linear-gradient(to bottom, #5a5a5a 0%, #3a3a3a 100%);
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 0 #000,
+        0 8px 0 rgba(0, 0, 0, 0.3),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .menu-button:active {
+      transform: translateY(2px);
+      box-shadow:
+        0 2px 0 #000,
+        0 4px 0 rgba(0, 0, 0, 0.3),
+        inset 0 2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-version {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+      z-index: 1;
+    }
+
+    /* === LOADING SCREEN === */
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #1a1a1a;
+      color: white;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #loading-screen.show {
+      display: flex;
+    }
+
+    #loading-screen h1 {
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    #loading-text {
+      font-size: 1.2em;
+      margin-top: 10px;
+      color: #ccc;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    #loading-bar-container {
+      width: 300px;
+      height: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 5px;
+      margin-top: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #loading-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #8BC34A);
+      transition: width 0.3s ease-out;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #game-container {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #hud {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 14px;
+      text-shadow: 1px 1px 2px black;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+      z-index: 100;
+    }
+
+    /* === HOTBAR === */
+    #hotbar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: var(--slot-gap);
+      z-index: 200;
+    }
+
+    .hotbar-slot {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .hotbar-slot:hover {
+      background: rgba(50, 50, 50, 0.8);
+    }
+
+    .hotbar-slot.selected {
+      border-color: white;
+      background: rgba(100, 100, 100, 0.8);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    .slot-number {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: var(--font-size-small);
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: bold;
+    }
+
+    .slot-icon {
+      width: var(--slot-icon-size);
+      height: var(--slot-icon-size);
+      border-radius: 2px;
+    }
+
+    .slot-count {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: var(--font-size-normal);
+      color: white;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px black;
+    }
+
+    .slot-durability {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .durability-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff4444, #44ff44);
+      transition: width 0.3s;
+    }
+
+    /* === INVENTORY MODAL === */
+    #inventory-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      pointer-events: all;
+      overflow-y: auto;
+      padding: var(--padding-small);
+      box-sizing: border-box;
+    }
+
+    #inventory-modal.open {
+      display: flex;
+    }
+
+    /* Когда печка или верстак открыты - инвентарь внизу, контейнер вертикально */
+    #inventory-modal.with-furnace,
+    #inventory-modal.with-crafting-table {
+      justify-content: flex-end;
+      background: rgba(0, 0, 0, 0.5);
+      padding-bottom: var(--padding-small);
+    }
+
+    .inventory-container {
+      position: relative;
+      background: rgba(30, 30, 30, 0.95);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: var(--padding-normal);
+      color: white;
+      pointer-events: all;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    /* Отступ снизу когда печка/верстак открыт */
+    #inventory-modal.with-furnace .inventory-container,
+    #inventory-modal.with-crafting-table .inventory-container {
+      margin-bottom: var(--padding-small);
+    }
+
+    .inventory-title {
+      font-size: var(--font-size-title);
+      margin-bottom: var(--padding-normal);
+      text-align: center;
+      text-shadow: 2px 2px 4px black;
+    }
+
+    .inventory-grid {
+      display: grid;
+      grid-template-columns: repeat(9, var(--slot-size));
+      gap: var(--slot-gap);
+      margin-bottom: var(--padding-normal);
+    }
+
+    .inventory-section-title {
+      font-size: var(--font-size-large);
+      margin-bottom: var(--padding-small);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .inventory-slot {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .inventory-slot:hover {
+      background: rgba(50, 50, 50, 0.7);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .close-inventory {
+      margin-top: var(--padding-small);
+      padding: var(--padding-small) var(--padding-normal);
+      background: rgba(100, 100, 100, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      font-size: var(--font-size-large);
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .close-inventory:hover {
+      background: rgba(150, 150, 150, 0.8);
+    }
+
+    /* Crafts Button */
+    #crafts-button:hover {
+      background: rgba(150, 150, 150, 0.9);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Items Modal (First Window) */
+    #items-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      padding: var(--padding-small);
+      box-sizing: border-box;
+    }
+
+    #items-modal.open {
+      display: flex;
+    }
+
+    .items-container {
+      background: rgba(30, 30, 30, 0.95);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: var(--padding-normal);
+      color: white;
+      pointer-events: all;
+      /* Keep this for interaction */
+      max-width: 90vw;
+      height: 500px;
+      /* TEMPORARY DIAGNOSTIC */
+      overflow-y: auto;
+      /* Keep for scrolling */
+      /* Absolute positioning for centering */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .item-icon {
+      width: calc(var(--slot-size) + 10px);
+      height: calc(var(--slot-size) + 10px);
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 5px;
+    }
+
+    .item-icon:hover {
+      background: rgba(50, 50, 50, 0.7);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+
+    .item-icon-image {
+      width: var(--slot-icon-size);
+      height: var(--slot-icon-size);
+      border-radius: 2px;
+    }
+
+    .item-icon-name {
+      font-size: var(--font-size-small);
+      color: rgba(255, 255, 255, 0.8);
+      text-align: center;
+      margin-top: 2px;
+      word-wrap: break-word;
+    }
+
+    /* Recipe Detail Modal (Second Window) */
+    #recipe-detail-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 2001;
+      pointer-events: all;
+      padding: var(--padding-small);
+      box-sizing: border-box;
+    }
+
+    #recipe-detail-modal.open {
+      display: block;
+      /* Changed from flex to block */
+    }
+
+    .recipe-detail-container {
+      background: rgba(30, 30, 30, 0.95);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      padding: var(--padding-normal);
+      color: white;
+      pointer-events: all;
+      /* Keep this for interaction */
+      max-width: 90vw;
+      height: 500px;
+      /* TEMPORARY DIAGNOSTIC */
+      overflow-y: auto;
+      /* Keep for scrolling */
+      /* Absolute positioning for centering */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .recipe-grid-3x3 {
+      display: grid;
+      grid-template-columns: repeat(3, var(--slot-size));
+      grid-template-rows: repeat(3, var(--slot-size));
+      gap: var(--slot-gap);
+    }
+
+    .recipe-slot {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .recipe-result-display {
+      display: flex;
+      align-items: center;
+      gap: var(--padding-normal);
+      margin-top: var(--padding-normal);
+    }
+
+    .recipe-arrow {
+      font-size: calc(var(--font-size-title) * 1.5);
+      color: #999;
+    }
+
+    /* === АДАПТИВНЫЕ СТИЛИ ДЛЯ ПЕЧКИ И ВЕРСТАКА === */
+
+    /* Модальные окна печки и верстака */
+    #furnace-modal,
+    #crafting-table-modal {
+      padding: var(--padding-normal) !important;
+      min-width: auto !important;
+    }
+
+    /* Слоты печки - адаптивные */
+    .furnace-slot {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #666;
+      border-radius: 4px;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Слоты верстака - адаптивные */
+    .crafting-slot {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #666;
+      border-radius: 4px;
+      position: relative;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Слот результата верстака */
+    .result-slot {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #999;
+    }
+
+    /* Сетка крафта 3x3 - адаптивная */
+    .crafting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, var(--slot-size));
+      grid-template-rows: repeat(3, var(--slot-size));
+      gap: var(--slot-gap);
+      padding: var(--padding-small);
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid #666;
+      border-radius: 4px;
+    }
+
+    /* Мини-верстак адаптивный */
+    #mini-crafting-grid {
+      grid-template-columns: repeat(2, var(--slot-size)) !important;
+      grid-template-rows: repeat(2, var(--slot-size)) !important;
+      gap: var(--slot-gap) !important;
+    }
+
+    #mini-crafting-result {
+      width: var(--slot-size) !important;
+      height: var(--slot-size) !important;
+    }
+
+    /* === Held Item Display === */
+    #held-item-display {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: calc(var(--slot-size) * 2);
+      /* Make it large */
+      height: calc(var(--slot-size) * 2);
+      /* Make it large */
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      pointer-events: none;
+      /* Allow clicks to pass through */
+      opacity: 0;
+      /* Hidden by default */
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    #held-item-display.visible {
+      opacity: 1;
+    }
+
+    #held-item-display #held-item-icon {
+      width: calc(var(--slot-icon-size) * 2);
+      height: calc(var(--slot-icon-size) * 2);
+      border: none;
+      /* No extra border for the icon */
+    }
+
+    #held-item-display #held-item-count {
+      font-size: var(--font-size-large);
+      bottom: 5px;
+      right: 5px;
+    }
+
+    /* === Held Item Display === */
+    #held-item-display {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: calc(var(--slot-size) * 2);
+      /* Make it large */
+      height: calc(var(--slot-size) * 2);
+      /* Make it large */
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      pointer-events: none;
+      /* Allow clicks to pass through */
+      opacity: 0;
+      /* Hidden by default */
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    #held-item-display.visible {
+      opacity: 1;
+    }
+
+    #held-item-display #held-item-icon {
+      width: calc(var(--slot-icon-size) * 2);
+      height: calc(var(--slot-icon-size) * 2);
+      border: none;
+      /* No extra border for the icon */
+    }
+
+    #held-item-display #held-item-count {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      font-size: var(--font-size-large);
+      font-weight: bold;
+      color: white;
+      text-shadow: 1px 1px 2px black;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Main Menu -->
+  <div id="main-menu">
+    <h1 class="menu-title">⛏️ Exam Project</h1>
+    <div class="menu-buttons">
+      <button class="menu-button" id="singleplayer-btn">Play</button>
+    </div>
+    <div class="menu-version">v1.0.0</div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <h1>⛏️ Exam Project</h1>
+    <div class="spinner"></div>
+    <div id="loading-bar-container">
+      <div id="loading-bar"></div>
+    </div>
+    <div id="loading-text">Initializing...</div>
+  </div>
+
+  <!-- Game Container -->
+  <div id="game-container">
+    <!-- HUD -->
+    <div id="hud">
+      <div>🗺️ World: <span id="world-name-display">Local World</span></div>
+      <div>🌍 Seed: <span id="seed-display">-</span></div>
+      <div>📍 Pos: <span id="pos-display">-</span></div>
+    </div>
+
+    <!-- Crosshair -->
+    <div id="crosshair"></div>
+
+    <!-- Hotbar -->
+    <div id="hotbar"></div>
+
+    <!-- Inventory Modal -->
+    <div id="inventory-modal">
+      <div class="inventory-container">
+        <div style="display: flex; gap: 20px;">
+          <!-- Left Side: Inventory -->
+          <div>
+            <!-- Заголовок с кнопкой Crafts -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+              <button id="crafts-button"
+                style="padding: 8px 10px; background: rgba(100, 100, 100, 0.9); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 4px; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;">
+                <span style="font-size: 20px;">📖</span>
+              </button>
+              <div class="inventory-title" style="margin-bottom: 0;">📦 Inventory</div>
+            </div>
+
+            <div class="inventory-section-title">Inventory</div>
+            <div id="main-inventory" class="inventory-grid"></div>
+
+            <div class="inventory-section-title">Hotbar</div>
+            <div id="inventory-hotbar" class="inventory-grid"></div>
+          </div>
+
+          <!-- Right Side: Mini Crafting Table 2x2 -->
+          <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 20px;">
+            <div class="inventory-title">🔨 Crafting </div>
+
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 20px;">
+              <!-- 2x2 Crafting Grid -->
+              <div id="mini-crafting-grid"
+                style="display: grid; grid-template-columns: repeat(2, 50px); grid-template-rows: repeat(2, 50px); gap: 4px;">
+                <!-- Will be populated by JS -->
+              </div>
+
+              <!-- Arrow -->
+              <div style="font-size: 24px; color: #999;">→</div>
+
+              <!-- Result Slot -->
+              <div id="mini-crafting-result" class="inventory-slot"
+                style="width: 50px; height: 50px; border-color: #999;">
+                <!-- Will be populated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="close-inventory" style="position: absolute; bottom: 50px; display: none;">Close (T)</button>
+    </div>
+
+    <!-- Items List Modal (First Window) -->
+    <div id="items-modal">
+      <div class="items-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0;">📦 Items</h2>
+          <button id="close-items"
+            style="padding: 8px 16px; background: rgba(100, 100, 100, 0.8); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 4px; color: white; cursor: pointer;">Close</button>
+        </div>
+        <div id="items-list"
+          style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 10px;">
+          <!-- Items will be populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Detail Modal (Second Window) -->
+    <div id="recipe-detail-modal">
+      <div class="recipe-detail-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0;">📖 Crafts</h2>
+          <button id="close-recipe-detail"
+            style="padding: 8px 16px; background: rgba(100, 100, 100, 0.8); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 4px; color: white; cursor: pointer;">Back</button>
+        </div>
+        <div id="recipe-detail-content" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+          <!-- Recipe detail will be populated by JS -->
+        </div>
+      </div>
+    </div>
+    <!-- Main Game Script -->
+    <script type="module" src="./index.js"></script>
+
+    <!-- Held Item Display -->
+    <div id="held-item-display">
+      <div id="held-item-icon" class="slot-icon"></div>
+      <div id="held-item-count" class="slot-count"></div>
+    </div>
+  </div>
+
+  <!-- Disable right-click context menu -->
+  <script>
+    // Отключаем контекстное меню браузера при ПКМ
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault()
+      return false
+    })
+  </script>
+</body>
+
+</html>

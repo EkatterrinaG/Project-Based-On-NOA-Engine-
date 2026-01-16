@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>⛏️ Exam Project</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="menu.css">
+</head>
+
+<body>
+  <!-- Main Menu View -->
+  <div id="main-menu-view" class="menu-view active">
+    <!-- Background elements are handled by CSS -->
+    <h1 class="menu-title">⛏️ Exam Project</h1>
+
+    <div class="menu-buttons">
+      <button class="menu-button" id="btn-singleplayer">Play</button>
+
+    </div>
+
+    <div class="menu-version">v1.0.0</div>
+  </div>
+
+  <!-- World Selection View -->
+  <div id="world-selection-view" class="menu-view">
+    <h2 class="section-title">Select World</h2>
+
+    <div class="world-selection-container">
+      <!-- Left Column: World List -->
+      <div class="world-list-container">
+        <div id="world-list" class="world-list">
+          <!-- World items will be injected here by JS -->
+          <div class="no-worlds-message">No Worlds</div>
+        </div>
+
+        <div class="world-list-controls">
+          <button class="control-button" id="btn-play-world" disabled>Play</button>
+          <button class="control-button danger" id="btn-delete-world" disabled>Delete</button>
+          <button class="control-button" id="btn-back-menu">Back</button>
+        </div>
+      </div>
+
+      <!-- Right Column: Create New World -->
+      <div class="create-world-container">
+        <h3>Create New World</h3>
+        <form id="create-world-form">
+          <div class="form-group">
+            <label for="new-world-name">World Name</label>
+            <input type="text" id="new-world-name" placeholder="New World" maxlength="20" required>
+          </div>
+
+          <div class="form-group">
+            <label for="new-world-seed">Seed (optional)</label>
+            <input type="text" id="new-world-seed" placeholder="Leave empty for random">
+          </div>
+
+          <button type="submit" class="create-button">Create New World</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading View -->
+  <div id="loading-view" class="menu-view">
+    <h1 class="menu-title">⛏️ Exam Project</h1>
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">Loading...</div>
+  </div>
+
+  <script src="menu.js"></script>
+</body>
+
+</html>
